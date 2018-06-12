@@ -1,0 +1,88 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "apiManagementServiceName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the API Management service to which the API should be added"
+      }
+    },
+    "apiName": {
+      "type": "string"
+    },
+    "productName": {
+      "type": "string"
+    },
+    "swaggerJsonUrl": {
+      "type": "string",
+      "metadata": {
+        "description": "URL to the API's Swagger definition"
+      }
+    },
+    "apiBasePath": {
+      "type": "string",
+      "metadata": {
+        "description": "Base (URL) path to the API operations"
+      }
+    },
+    "apiPolicy": {
+      "type": "string",
+      "metadata": {
+        "description": "API policy (XML)"
+      }
+    }
+  },
+  "variables": {
+    "fullApiName": "[concat('Microsoft.ApiManagement/service/', parameters('apiManagementServiceName'), '/apis/', parameters('apiName'))]",
+    "fullProductName": "[concat('Microsoft.ApiManagement/service/', parameters('apiManagementServiceName'), '/products/', parameters('productName'))]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2017-03-01",
+      "type": "Microsoft.ApiManagement/service/products",
+      "name": "[concat(parameters('apiManagementServiceName') ,'/', parameters('productName'))]",
+      "dependsOn": [
+      ],
+      "properties": {
+        "displayName": "[parameters('productName')]",
+        "subscriptionRequired": false,
+        "state": "published"
+      }
+    },
+    {
+      "apiVersion": "2017-03-01",
+      "type": "Microsoft.ApiManagement/service/apis",
+      "name": "[concat(parameters('apiManagementServiceName'), '/', parameters('apiName'))]",
+      "dependsOn": [
+        "[variables('fullProductName')]"
+      ],
+      "properties": {
+        "contentFormat": "SwaggerLinkJson",
+        "contentValue": "[parameters('swaggerJsonUrl')]",
+        "path": "[parameters('apiBasePath')]"
+      }
+    },
+    {
+      "apiVersion": "2017-03-01",
+      "type": "Microsoft.ApiManagement/service/products/apis",
+      "name": "[concat(parameters('apiManagementServiceName'), '/', parameters('productName'), '/', parameters('apiName'))]",
+      "dependsOn": [
+        "[variables('fullProductName')]",
+        "[variables('fullApiName')]"
+      ]
+    },
+    {
+      "apiVersion": "2017-03-01",
+      "type": "Microsoft.ApiManagement/service/apis/policies",
+      "name": "[concat(parameters('apiManagementServiceName'), '/', parameters('apiName'), '/policy')]",
+      "dependsOn": [
+        "[variables('fullProductName')]",
+        "[variables('fullApiName')]"
+      ],
+      "properties": {
+        "policyContent": "[parameters('apiPolicy')]"
+      }
+    }
+  ]
+}
