@@ -26,8 +26,10 @@ variable "api_management_service_name" {
   default = ""
 }
 
+# (Optional) Name of the associated product to be created with the API
 variable "api_product_name" {
   type = "string"
+  default = ""
 }
 
 # (Optional) The URL that should be used by the API to talk to the backend application.
